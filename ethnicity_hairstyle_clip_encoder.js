@@ -71,6 +71,17 @@ app.registerExtension({
                     app.ui.settings.setSettingValue('HairstyleSelection', hairstyleWidget.value);
                 };
 
+                // ----------------------------------------
+                // Expression widget customization
+                // ----------------------------------------
+                // Find the widget associated with expression selection.
+                let expressionWidget = this.widgets.find((w) => w.name === "expression");
+                // Again, do not override the widget's default value.
+                // expressionWidget.value = ...;  <-- This line is intentionally removed.
+                // Set a callback to update the app settings when the expression selection is changed.
+                expressionWidgetWidget.callback = () => {
+                    app.ui.settings.setSettingValue('ExpressionSelection', expressionWidgetWidget.value);
+                };
                 // Return the result of the original onNodeCreated handler.
                 return r;
             };

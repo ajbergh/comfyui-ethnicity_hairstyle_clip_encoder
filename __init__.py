@@ -72,6 +72,7 @@ class CLIPTextEncodeWithExtras:
         # IMPORTANT: Load the CSV options before constructing the INPUT_TYPES dictionary.
         ethnicity_options = read_csv_options('ethnicity.csv')
         hairstyle_options = read_csv_options('hairstyle.csv')
+        expression_options = read_csv_options('expression.csv')  # Add this line
 
         # Define the input types required by the node.
         return {
@@ -81,12 +82,14 @@ class CLIPTextEncodeWithExtras:
                 "clip": ("CLIP", ),
                 "ethnicity_toggle": (["on", "off"], {"default": "on"}),
                 "hairstyle_toggle": (["on", "off"], {"default": "on"}),
+                "expression_toggle": (["on", "off"], {"default": "on"}),  # Add this line
             },
             "optional": {
                 # Provide the ethnicity and hairstyle options for selection,
                 # with "random" as the default if present.
                 "ethnicity": (ethnicity_options, {"default": ethnicity_options[0]}),
                 "hairstyle": (hairstyle_options, {"default": hairstyle_options[0]}),
+                "expression": (expression_options, {"default": expression_options[0]}),  # Add this line
             }
         }
 
@@ -100,17 +103,17 @@ class CLIPTextEncodeWithExtras:
     CATEGORY = "conditioning"
 
     @classmethod
-    def IS_CHANGED(self, text_positive, text_negative, ethnicity, hairstyle, ethnicity_toggle, hairstyle_toggle):
+    def IS_CHANGED(self, text_positive, text_negative, ethnicity, hairstyle, expression, ethnicity_toggle, hairstyle_toggle, expression_toggle):
         """
         Determines if the node's inputs have changed.
-        If either ethnicity or hairstyle is set to "random", it returns the current time,
+        If either ethnicity, hairstyle, or expression is set to "random", it returns the current time,
         forcing re-encoding. Otherwise, it concatenates the positive and negative texts.
         """
-        if ethnicity == "random" or hairstyle == "random":
+        if ethnicity == "random" or hairstyle == "random" or expression == "random":
             return time.time()
         return text_positive + text_negative
 
-    def encode(self, clip, text_positive, text_negative, ethnicity, hairstyle, ethnicity_toggle, hairstyle_toggle):
+    def encode(self, clip, text_positive, text_negative, ethnicity, hairstyle, expression, ethnicity_toggle, hairstyle_toggle, expression_toggle):
         # Get the directory of this script to locate the CSV files.
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -133,6 +136,7 @@ class CLIPTextEncodeWithExtras:
         # Read and filter options excluding "random" for selecting random elements.
         ethnicity_options_for_random = [option for option in read_csv_options('ethnicity.csv') if option != 'random']
         hairstyle_options_for_random = [option for option in read_csv_options('hairstyle.csv') if option != 'random']
+        expression_options_for_random = [option for option in read_csv_options('expression.csv') if option != 'random']
 
         # Handle Ethnicity selection: add ethnicity info to the positive text if toggle is on.
         if ethnicity_toggle == "on":
@@ -153,6 +157,14 @@ class CLIPTextEncodeWithExtras:
                 chosen_hairstyle = hairstyle
             # Prepend the chosen hairstyle description to the text.
             text_positive = f"{chosen_hairstyle} hair, {text_positive}"
+
+        # Handle Expression selection
+        if expression_toggle == "on":
+            if expression == "random":
+                chosen_expression = random.choice(expression_options_for_random)
+            else:
+                chosen_expression = expression
+            text_positive = f"{chosen_expression} expression, {text_positive}"
 
         # Tokenize both positive and negative texts using the provided CLIP model.
         tokens_positive = clip.tokenize(text_positive)
