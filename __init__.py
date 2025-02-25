@@ -103,7 +103,7 @@ class CLIPTextEncodeWithExtras:
     CATEGORY = "conditioning"
 
     @classmethod
-    def IS_CHANGED(self, text_positive, text_negative, ethnicity, hairstyle, expression, ethnicity_toggle, hairstyle_toggle, expression_toggle):
+    def IS_CHANGED(self, clip, text_positive, text_negative, ethnicity, hairstyle, expression, ethnicity_toggle, hairstyle_toggle, expression_toggle):
         """
         Determines if the node's inputs have changed.
         If either ethnicity, hairstyle, or expression is set to "random", it returns the current time,
